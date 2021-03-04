@@ -1,0 +1,8 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/include
+
+Name: zgraph
+Description: zgraph is a modern C++ library
+Version: @zgraph_VERSION@
+Cflags: -I${includedir}

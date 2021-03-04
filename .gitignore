@@ -1,0 +1,46 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#
+*.DS_Store
+.DS_Store
+
+*.pyc
+!docs
+docsrc/python/gen_modules/
+docsrc/python/auto_examples/
+
+
+#CMake Temp
+CMakeCache.txt
+CMakeFiles
+
+
+# bld folder
+bld/

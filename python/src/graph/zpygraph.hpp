@@ -77,7 +77,7 @@ namespace zgraph {
 
 
 
-  template<class graph_t, class py_class_t>
+    template<class graph_t, class py_class_t>
     void def_bfs(
         py::module & py_mod,
         py_class_t & py_class, 
@@ -92,23 +92,23 @@ namespace zgraph {
 
 
 
-        using bfs_t = zbfs<graph_t>;
-        py::class_<bfs_t>(py_mod, (std::string("Bfs") + graph_cls_name).c_str())
-            .def("__call__", [](
-                const bfs_t & bfs,
-                const nodes_tensor_type & nodes
-            ){
-                bfs(nodes);
-            }, py::arg("start_nodes"))
-        ;
-        // factor
-        py_mod.def("bfs_factory", [](const graph_t & graph){
-                return new bfs_t(graph);
-            },
-            py::return_value_policy::take_ownership,
-            py::keep_alive<0, 1>(),
-            py::arg("graph")
-        );
+        // using bfs_t = zbfs<graph_t>;
+        // py::class_<bfs_t>(py_mod, (std::string("Bfs") + graph_cls_name).c_str())
+        //     .def("__call__", [](
+        //         const bfs_t & bfs,
+        //         const nodes_tensor_type & nodes
+        //     ){
+        //         bfs(nodes);
+        //     }, py::arg("start_nodes"))
+        // ;
+        // // factor
+        // py_mod.def("bfs_factory", [](const graph_t & graph){
+        //         return new bfs_t(graph);
+        //     },
+        //     py::return_value_policy::take_ownership,
+        //     py::keep_alive<0, 1>(),
+        //     py::arg("graph")
+        // );
 
     }
 

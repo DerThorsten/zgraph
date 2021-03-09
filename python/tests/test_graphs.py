@@ -140,13 +140,13 @@ class TestUGraph(object):
     pass
 
 
-class TestBfs(object):
-    @GRAPHS
-    def test_bfs(self, graph):
+# class TestBfs(object):
+#     @GRAPHS
+#     def test_bfs(self, graph):
 
-        bfs = zgraph.bfs_factory(graph=graph)
+#         bfs = zgraph.bfs_factory(graph=graph)
 
-        nodes = [n for n in graph.node_iter()]
+#         nodes = [n for n in graph.node_iter()]
 
-        # run
-        bfs(start_nodes=nodes[0:2])
+#         # run
+#         bfs(start_nodes=nodes[0:2])

@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[]){
 
-    using graph_t = zgraph::zadjacency_list_ugraph<int>;
+    using graph_t = zgraph::zadjacency_list_ugraph<false, false>;
     using weights_map_t = typename graph_t:: template edge_map<float>;
     graph_t g;
 
@@ -55,7 +55,11 @@ int main(int argc, char *argv[]){
     }
 
 
-    
+    for( auto edge : g.template items<zgraph::zedge_tag>()){
+        std::cout <<"the edges "<<edge<<"\n";
+        weights_map[edge] = dist(gen);
+    }
+
 
     zgraph::zmst_kruskal<graph_t> mst(g);
     mst.run(weights_map, [](auto && edge, auto && weight, auto && num_clusters){

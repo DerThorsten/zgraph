@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[]){
 
-    using graph_t = zgraph::zadjacency_list_digraph<int>;
+    using graph_t = zgraph::zadjacency_list_digraph<false, false>;
     using weights_map_t = typename graph_t:: template edge_map<float>;
     graph_t g;
 

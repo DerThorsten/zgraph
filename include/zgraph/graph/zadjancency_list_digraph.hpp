@@ -9,7 +9,8 @@
 #include <set>
 #include <array>
 
-
+#include "zgraph/graph/detail/zgraph_items.hpp"
+#include "zgraph/graph/detail/zgraph_maps.hpp"
 #include "zgraph/graph/zgraph_base.hpp"
 #include "zgraph/detail/zvalue_map.hpp"
 
@@ -21,38 +22,33 @@ namespace zgraph
  
 
 
-    template<class T>
+    template<bool is_mutligraph, bool allow_self_loop>
     class zadjacency_list_digraph;
 
-    template<class T>
-    class zgraph_type_traits<zadjacency_list_digraph<T>>{
+    template<bool is_mutligraph, bool allow_self_loop>
+    class zgraph_type_traits<zadjacency_list_digraph<is_mutligraph, allow_self_loop>>{
     public:
-        using graph_t = zadjacency_list_digraph<T>;
+
+        using is_directed_t = std::true_type;
+        using is_mutligraph_t = std::integral_constant<bool, is_mutligraph>;
+        using allow_self_loops_t = std::integral_constant<bool, allow_self_loop>;
+
+        using graph_t = zadjacency_list_digraph<is_mutligraph, allow_self_loop>;
         using node_index_t = uint64_t;
         using edge_index_t = uint64_t;
 
         template<class value_t>
-        class node_map : public detail::zvalue_map<std::map<node_index_t, value_t>>{
-        public:
-            node_map(const graph_t & g, const value_t & value = value_t()){
-                ranges::for_each(g.nodes(), [&](auto && node){
-                    //this->emplace(node, value); TODO impl me
-                    this->operator[](node) = value;
-
-                });
-            }
+        class node_map : public zassociative_graph_item_map<graph_t,znode_tag,std::map<node_index_t, value_t>>{
+            using base_t = zassociative_graph_item_map<graph_t,znode_tag,std::map<node_index_t, value_t>>;
+            using base_t::base_t;
         };
 
         template<class value_t>
-        class edge_map : public detail::zvalue_map<std::map<edge_index_t, value_t>>{
-        public:
-            edge_map(const graph_t & g, const value_t & value = value_t()){
-                ranges::for_each(g.edges(), [&](auto && edge){
-                    this->operator[](edge) = value;
-                });
-            }
+        class edge_map : public zassociative_graph_item_map<graph_t,zedge_tag,std::map<edge_index_t, value_t>>{
+            using base_t = zassociative_graph_item_map<graph_t,zedge_tag,std::map<edge_index_t, value_t>>;
+            using base_t::base_t;
         };
-        
+
         class node_set : public std::set<node_index_t>{
         public:
             node_set(const graph_t & g){
@@ -65,8 +61,8 @@ namespace zgraph
 
 
 
-    template<class T>
-    class zadjacency_list_digraph : public zdigraph_base<zadjacency_list_digraph<T>>
+    template<bool is_mutligraph, bool allow_self_loop>
+    class zadjacency_list_digraph : public zgraph_base<zadjacency_list_digraph<is_mutligraph, allow_self_loop>>
     {
     public:
         using node_index_t = uint64_t;
@@ -117,10 +113,10 @@ namespace zgraph
         }
 
         // api
-        const auto & adjacency(const node_index_t node)const{
+        decltype(auto) adjacency(const node_index_t node)const{
             return get_out_adjacency(node);
         }
-        const auto & in_adjacency(const node_index_t node)const{
+        decltype(auto) in_adjacency(const node_index_t node)const{
             return get_in_adjacency(node);
         }
 

@@ -9,6 +9,9 @@
 #include <set>
 #include <array>
 
+#include "zgraph/graph/detail/zgraph_items.hpp"
+#include "zgraph/graph/detail/zgraph_maps.hpp"
+#include "zgraph/detail/zrange.hpp"
 
 #include "zgraph/graph/zgraph_base.hpp"
 #include "zgraph/detail/zvalue_map.hpp"
@@ -20,43 +23,39 @@ namespace zgraph
 
 
 
-    template<class T>
+    template<bool is_mutligraph, bool allow_self_loop>
     class zadjacency_list_ugraph;
 
-    template<class T>
-    class zgraph_type_traits<zadjacency_list_ugraph<T>>{
+    template<bool is_mutligraph, bool allow_self_loop>
+    class zgraph_type_traits<zadjacency_list_ugraph<is_mutligraph, allow_self_loop>>{
     public:
-        using graph_t = zadjacency_list_ugraph<T>;
+
+        using is_directed_t = std::false_type;
+        using is_mutligraph_t = std::integral_constant<bool, is_mutligraph>;
+        using allow_self_loops_t = std::integral_constant<bool, allow_self_loop>;
+
+
+        using graph_t = zadjacency_list_ugraph<is_mutligraph, allow_self_loop>;
         using node_index_t = uint64_t;
         using edge_index_t = uint64_t;
 
-        template<class value_t>
-        class node_map : public detail::zvalue_map<std::map<node_index_t, value_t>>{
-        public:
-            node_map(const graph_t & g, const value_t & value = value_t()){
-                ranges::for_each(g.nodes(), [&](auto && node){
-                    //this->emplace(node, value); TODO impl me
-                    this->operator[](node) = value;
 
-                });
-            }
+    template<class value_t>
+        class node_map : public zassociative_graph_item_map<graph_t,znode_tag,std::map<node_index_t, value_t>>{
+            using base_t = zassociative_graph_item_map<graph_t,znode_tag,std::map<node_index_t, value_t>>;
+            using base_t::base_t;
         };
 
         template<class value_t>
-        class edge_map : public detail::zvalue_map<std::map<edge_index_t, value_t>>{
-        public:
-            edge_map(const graph_t & g, const value_t & value = value_t()){
-                ranges::for_each(g.edges(), [&](auto && edge){
-                    this->operator[](edge) = value;
-                });
-            }
+        class edge_map : public zassociative_graph_item_map<graph_t,zedge_tag,std::map<edge_index_t, value_t>>{
+            using base_t = zassociative_graph_item_map<graph_t,zedge_tag,std::map<edge_index_t, value_t>>;
+            using base_t::base_t;
         };
 
 
         class node_set : public std::set<node_index_t>{
         public:
             node_set(const graph_t & g){
-
             }
         };
 
@@ -65,10 +64,15 @@ namespace zgraph
 
 
 
-    template<class T>
-    class zadjacency_list_ugraph : public zugraph_base<zadjacency_list_ugraph<T>>
+    template<bool is_mutligraph, bool allow_self_loop>
+    class zadjacency_list_ugraph : public zgraph_base<zadjacency_list_ugraph<is_mutligraph, allow_self_loop>>
     {
     public:
+
+
+        using  base_t = zgraph_base<zadjacency_list_ugraph<is_mutligraph, allow_self_loop>>;
+        using base_t::endpoints;
+
         using node_index_t = uint64_t;
         using edge_index_t = uint64_t;
         using adjacency_t = std::map<node_index_t, edge_index_t>;
@@ -96,8 +100,8 @@ namespace zgraph
                 // edge cannot exist
                 const auto edge_index = m_next_edge_index++;
                 m_edges.emplace(edge_index, endpoint_array_t{u, v});
-                this->get_adjacency(u).emplace(edge_index, v);
-                this->get_adjacency(v).emplace(edge_index, u);
+                this->get_adjacency(u).emplace(v, edge_index);
+                this->get_adjacency(v).emplace(u, edge_index);
                 return edge_index;
             } else{
                 // edge might exist
@@ -109,8 +113,8 @@ namespace zgraph
                     // edge does not exist
                     const auto edge_index = m_next_edge_index++;
                     m_edges.emplace(edge_index, endpoint_array_t{u, v});
-                    adj_u.emplace(edge_index, v);
-                    this->get_adjacency(v).emplace(edge_index, u);
+                    adj_u.emplace(v, edge_index);
+                    this->get_adjacency(v).emplace(u, edge_index);
                     return edge_index;
                 }
             }
@@ -118,7 +122,9 @@ namespace zgraph
 
         // api
         const auto & adjacency(const node_index_t node)const{
-            return get_adjacency(node);
+            const auto & adj = get_adjacency(node);
+            return adj;
+            //return detail::zconst_range<typename adjacency_t::const_iterator>(adj.begin(), adj.end());
         }
 
 
@@ -135,11 +141,11 @@ namespace zgraph
             return m_edges.size();
         }
 
-        auto nodes() const{
+        decltype(auto) nodes() const{
             return m_adjacencies | ranges::views::keys;
         }
 
-        auto edges() const{
+        decltype(auto) edges() const{
             return m_edges | ranges::views::keys;
         }
 
